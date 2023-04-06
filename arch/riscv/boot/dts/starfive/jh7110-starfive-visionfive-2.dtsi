@@ -276,3 +276,10 @@
 	pinctrl-0 = <&uart0_pins>;
 	status = "okay";
 };
+
+&usb0 {
+	phys = <&usbphy0>;
+	phy-names = "usb2-phy";
+	dr_mode = "peripheral";
+	status = "okay";
+};
