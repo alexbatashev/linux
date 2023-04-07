@@ -378,6 +378,19 @@
 			status = "disabled";
 		};
 
+		sfctemp: temperature-sensor@120e0000  {
+			compatible = "starfive,jh7100-temp";
+			reg = <0x0 0x120e0000 0x0 0x10000>;
+			clocks = <&syscrg JH7110_SYSCLK_TEMP_CORE>,
+				 <&syscrg JH7110_SYSCLK_TEMP_APB>;
+			clock-names = "sense", "bus";
+			resets = <&syscrg JH7110_SYSRST_TEMP_CORE>,
+				 <&syscrg JH7110_SYSRST_TEMP_APB>;
+			reset-names = "sense", "bus";
+			interrupts = <81>;
+			#thermal-sensor-cells = <0>;
+		};
+
 		uart4: serial@12010000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x0 0x12010000 0x0 0x10000>;
@@ -618,6 +631,32 @@
 			reg = <0x0 0x17030000 0x0 0x10000>;
 			interrupts = <111>;
 			#power-domain-cells = <1>;
+		};
+	};
+
+	thermal-zones {
+		cpu-thermal {
+			polling-delay-passive = <250>;
+			polling-delay = <15000>;
+
+			thermal-sensors = <&sfctemp>;
+
+			cooling-maps {
+			};
+
+			trips {
+				cpu_alert0: cpu_alert0 {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cpu_crit: cpu_crit {
+					temperature = <90000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
 		};
 	};
 };
