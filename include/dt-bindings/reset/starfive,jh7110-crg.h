@@ -179,6 +179,7 @@
 
 #define JH7110_STGRST_END			23
 
+<<<<<<< HEAD
 /* ISPCRG resets */
 #define JH7110_ISPRST_ISPV2_TOP_WRAPPER_P	0
 #define JH7110_ISPRST_ISPV2_TOP_WRAPPER_C	1
@@ -211,4 +212,6 @@
 
 #define JH7110_VOUTRST_END			12
 
+=======
+>>>>>>> db72e33a6fa7 (dt-bindings: clock: Add StarFive JH7110 System-Top-Group clock and reset generator)
 #endif /* __DT_BINDINGS_RESET_STARFIVE_JH7110_CRG_H__ */
