@@ -180,6 +180,9 @@
 #define JH7110_STGRST_END			23
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c6843f06c3b2 (dt-bindings: clock: Add StarFive JH7110 Image-Signal-Process clock and reset generator)
 /* ISPCRG resets */
 #define JH7110_ISPRST_ISPV2_TOP_WRAPPER_P	0
 #define JH7110_ISPRST_ISPV2_TOP_WRAPPER_C	1
@@ -196,6 +199,7 @@
 
 #define JH7110_ISPRST_END			12
 
+<<<<<<< HEAD
 /* VOUTCRG resets */
 #define JH7110_VOUTRST_DC8200_AXI		0
 #define JH7110_VOUTRST_DC8200_AHB		1
@@ -214,4 +218,6 @@
 
 =======
 >>>>>>> db72e33a6fa7 (dt-bindings: clock: Add StarFive JH7110 System-Top-Group clock and reset generator)
+=======
+>>>>>>> c6843f06c3b2 (dt-bindings: clock: Add StarFive JH7110 Image-Signal-Process clock and reset generator)
 #endif /* __DT_BINDINGS_RESET_STARFIVE_JH7110_CRG_H__ */
