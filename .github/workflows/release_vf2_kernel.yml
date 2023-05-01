@@ -25,6 +25,7 @@ jobs:
         #branch: master
         path: /tmp/
         repo: 'agreenbhm/linux'
+        search_artifacts: true
     #- name: Download artifacts    
     #  uses: actions/download-artifact@v3
     #  with:
