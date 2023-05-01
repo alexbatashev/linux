@@ -1,0 +1,38 @@
+name: Release VF2 Kernel
+
+permissions:
+  contents: write
+  
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Generate release tag
+      id: tag
+      run: |
+        echo "::set-output name=release_tag::Build_$(date +"%Y.%m.%d_%H-%M")"
+    
+    - name: Download artifacts    
+    - uses: actions/download-artifact@v3
+      with:
+        name: compiled_vf2_debs
+        path: /tmp/
+    
+    - name: Display structure of downloaded files
+      run: ls -R
+      working-directory: /tmp/
+ 
+ #   - name: Release
+ #     uses: softprops/action-gh-release@v1
+ #     env:
+ #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+ #     with: |
+ #       tag_name: ${{ steps.tag.outputs.release_tag }}
+ #       body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
+ #       files: |
+ #         /tmp/*.deb
