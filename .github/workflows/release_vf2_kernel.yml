@@ -26,6 +26,8 @@ jobs:
         path: /tmp/
         repo: 'agreenbhm/linux'
         search_artifacts: true
+        github_token: ${{secrets.GITHUB_TOKEN}}
+
     #- name: Download artifacts    
     #  uses: actions/download-artifact@v3
     #  with:
