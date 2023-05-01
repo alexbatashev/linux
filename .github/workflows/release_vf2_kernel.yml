@@ -22,7 +22,7 @@ jobs:
       with:
         workflow: build_visionfive2_kernel.yml
         name: compiled_vf2_debs
-        #branch: master
+        branch: master
         path: /tmp/
         repo: 'agreenbhm/linux'
         search_artifacts: true
