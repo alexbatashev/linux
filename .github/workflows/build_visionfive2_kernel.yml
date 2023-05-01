@@ -42,14 +42,19 @@ jobs:
     - name: Build .deb packages
       run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv bindeb-pkg
       
-    - name: Release
-      uses: Wandalen/wretry.action@master
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v3
       with:
-        action: softprops/action-gh-release@v1
-        attempt_limit: 3
-        attempt_delay: 5000
-        with: |
-          tag_name: ${{ steps.tag.outputs.release_tag }}
-          body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
-          files: |
-            ../*.deb
+        name: compiled_vf2_debs
+        path: ../*.deb
+        retention-days: 5
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with: |
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
+        files: |
+          ../*.deb
