@@ -42,11 +42,14 @@ jobs:
     - name: Build .deb packages
       run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv bindeb-pkg
       
+    - name: Copy .deb to /tmp
+      run: cp ../*.deb /tmp/
+      
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v3
       with:
         name: compiled_vf2_debs
-        path: ../*.deb
+        path: /tmp/*.deb
         retention-days: 5
 
     - name: Release
@@ -57,4 +60,4 @@ jobs:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
         files: |
-          ../*.deb
+          /tmp/*.deb
