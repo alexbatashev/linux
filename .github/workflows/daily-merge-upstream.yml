@@ -20,7 +20,8 @@ jobs:
       - name: Merge Upstream
         run: |
           git remote add upstream https://github.com/torvalds/linux.git
-          git pull --no-rebase --commit --no-edit upstream master
+          git pull --no-rebase --commit --no-edit upstream master #pull upstream changes
+          git pull --no-rebase --commit --no-edit origin master #ensure synced with our repo
           git push origin master
         #uses: exions/merge-upstream@v1
         #with:
