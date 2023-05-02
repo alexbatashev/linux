@@ -45,6 +45,7 @@ description:
   from S-mode. So add thead,c900-plic to distinguish them.
 
 maintainers:
+  - Sagar Kadam <sagar.kadam@sifive.com>
   - Paul Walmsley  <paul.walmsley@sifive.com>
   - Palmer Dabbelt <palmer@dabbelt.com>
 
@@ -91,7 +92,7 @@ properties:
       riscv,cpu-intc node, which has a riscv node as parent.
 
   riscv,ndev:
-    $ref: /schemas/types.yaml#/definitions/uint32
+    $ref: "/schemas/types.yaml#/definitions/uint32"
     description:
       Specifies how many external interrupts are supported by this controller.
 
