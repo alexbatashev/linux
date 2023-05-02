@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: master             # set the branch to merge to
-          fetch-depth: 1 
+          fetch-depth: 0 
       - name: Merge Upstream
         run: |
           git remote add upstream https://github.com/torvalds/linux.git
