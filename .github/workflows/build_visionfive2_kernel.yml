@@ -20,11 +20,7 @@ jobs:
       options: --user root
       
     steps:
-    - name: Generate release tag
-      id: tag
-      run: |
-        echo "::set-output name=release_tag::Build_$(date +"%Y.%m.%d_%H-%M")"
-        
+    
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -51,7 +47,12 @@ jobs:
         name: compiled_vf2_debs
         path: /tmp/*.deb
         retention-days: 5
-
+    
+    - name: Generate release tag
+      id: tag
+      run: |
+        echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)"
+        
     - name: Release
       uses: softprops/action-gh-release@v1
       env:
