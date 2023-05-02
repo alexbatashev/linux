@@ -31,7 +31,7 @@ jobs:
     
     - name: Extract Artifact
       run: |
-        working-directory: /tmp/
+        cd /tmp/
         unzip artifact.zip
         
     - name: Generate release tag
@@ -40,6 +40,7 @@ jobs:
         echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)"
 
     - name: Display structure of downloaded files
-      run: ls -R
-      working-directory: /tmp/
+      run: |
+        cd /tmp/
+        ls -R
 
