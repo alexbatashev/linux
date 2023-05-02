@@ -62,3 +62,8 @@ jobs:
         body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
         files: |
           /tmp/*.deb
+          
+  Release_Kernel:
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    needs: [build]
+    uses: ./.github/workflows/release_vf2_kernel.yml
