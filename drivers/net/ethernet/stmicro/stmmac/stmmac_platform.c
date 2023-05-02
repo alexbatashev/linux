@@ -712,15 +712,14 @@ int stmmac_pltfr_remove(struct platform_device *pdev)
 	struct net_device *ndev = platform_get_drvdata(pdev);
 	struct stmmac_priv *priv = netdev_priv(ndev);
 	struct plat_stmmacenet_data *plat = priv->plat;
-
-	stmmac_dvr_remove(&pdev->dev);
+	int ret = stmmac_dvr_remove(&pdev->dev);
 
 	if (plat->exit)
 		plat->exit(pdev, plat->bsp_priv);
 
 	stmmac_remove_config_dt(pdev, plat);
 
-	return 0;
+	return ret;
 }
 EXPORT_SYMBOL_GPL(stmmac_pltfr_remove);
 

@@ -78,7 +78,7 @@ static int starfive_dwmac_set_mode(struct plat_stmmacenet_data *plat_dat)
 						      "starfive,syscon",
 						      2, args);
 	if (IS_ERR(regmap))
-		return dev_err_probe(dwmac->dev, PTR_ERR(regmap), "getting the regmap failed\n");
+		return dev_err_probe(dwmac->dev, PTR_ERR(regmap), "syscon regmap failed\n");
 
 	/* args[0]:offset  args[1]: shift */
 	err = regmap_update_bits(regmap, args[0],

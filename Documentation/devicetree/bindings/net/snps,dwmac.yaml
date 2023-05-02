@@ -66,9 +66,6 @@ properties:
         - ingenic,x2000-mac
         - loongson,ls2k-dwmac
         - loongson,ls7a-dwmac
-        - qcom,qcs404-ethqos
-        - qcom,sc8280xp-ethqos
-        - qcom,sm8150-ethqos
         - renesas,r9a06g032-gmac
         - renesas,rzn1-gmac
         - rockchip,px30-gmac
@@ -111,7 +108,7 @@ properties:
     minItems: 1
     items:
       - const: macirq
-      - enum: [eth_wake_irq, eth_lpi]
+      - const: eth_wake_irq
       - const: eth_lpi
 
   clocks:
@@ -562,10 +559,10 @@ required:
 
 dependencies:
   snps,reset-active-low: ["snps,reset-gpio"]
-  snps,reset-delays-us: ["snps,reset-gpio"]
+  snps,reset-delay-us: ["snps,reset-gpio"]
 
 allOf:
-  - $ref: ethernet-controller.yaml#
+  - $ref: "ethernet-controller.yaml#"
   - if:
       properties:
         compatible:
@@ -582,7 +579,6 @@ allOf:
               - ingenic,x1600-mac
               - ingenic,x1830-mac
               - ingenic,x2000-mac
-              - qcom,sc8280xp-ethqos
               - snps,dwmac-3.50a
               - snps,dwmac-4.10a
               - snps,dwmac-4.20a
@@ -637,9 +633,6 @@ allOf:
               - ingenic,x1600-mac
               - ingenic,x1830-mac
               - ingenic,x2000-mac
-              - qcom,qcs404-ethqos
-              - qcom,sc8280xp-ethqos
-              - qcom,sm8150-ethqos
               - snps,dwmac-4.00
               - snps,dwmac-4.10a
               - snps,dwmac-4.20a

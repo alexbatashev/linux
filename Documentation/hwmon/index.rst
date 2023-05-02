@@ -1,8 +1,6 @@
-.. SPDX-License-Identifier: GPL-2.0
-
-===================
-Hardware Monitoring
-===================
+=========================
+Linux Hardware Monitoring
+=========================
 
 .. toctree::
    :maxdepth: 1
@@ -22,7 +20,6 @@ Hardware Monitoring Kernel Drivers
 
    abituguru
    abituguru3
-   acbel-fsg032
    acpi_power_meter
    ad7314
    adc128d818
@@ -76,7 +73,6 @@ Hardware Monitoring Kernel Drivers
    g762
    gsc-hwmon
    gl518sm
-   gxp-fan-ctrl
    hih6130
    ibmaem
    ibm-cffps
@@ -148,7 +144,6 @@ Hardware Monitoring Kernel Drivers
    max6697
    max8688
    mc13783-adc
-   mc34vr500
    mcp3021
    menf21bmc
    mlxreg-fan
