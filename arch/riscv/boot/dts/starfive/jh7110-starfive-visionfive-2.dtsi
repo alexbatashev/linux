@@ -166,6 +166,34 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c5_pins>;
 	status = "okay";
+
+	axp15060: pmic@36 {
+		compatible = "x-powers,axp15060";
+		reg = <0x36>;
+
+		regulators {
+			vcc_3v3_sy: dcdc1 {
+				regulator-always-on;
+				regulator-name = "vcc-3v3-sy";
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+			};
+
+			vdd_cpu: dcdc2 {
+				regulator-always-on;
+				regulator-min-microvolt = <500000>;
+				regulator-max-microvolt = <1540000>;
+				regulator-name = "vdd-cpu";
+			};
+
+			vdd_sd: aldo4 {
+				regulator-always-on;
+				regulator-name = "vdd-sd";
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+			};
+		};
+	};
 };
 
 &i2c6 {
@@ -187,6 +215,8 @@
 	non-removable;
 	cap-mmc-hw-reset;
 	post-power-on-delay-ms = <200>;
+	vqmmc-supply = <&vdd_sd>;
+	vmmc-supply = <&vcc_3v3_sy>;
 	status = "okay";
 };
 
@@ -345,6 +375,22 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart0_pins>;
 	status = "okay";
+};
+
+&U74_1 {
+	cpu-supply = <&vdd_cpu>;
+};
+
+&U74_2 {
+	cpu-supply = <&vdd_cpu>;
+};
+
+&U74_3 {
+	cpu-supply = <&vdd_cpu>;
+};
+
+&U74_4 {
+	cpu-supply = <&vdd_cpu>;
 };
 
 &usb0 {
