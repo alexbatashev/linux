@@ -18,11 +18,15 @@ jobs:
           ref: master             # set the branch to merge to
           fetch-depth: 0 
       - name: Merge Upstream
-        uses: exions/merge-upstream@v1
-        with:
-          upstream: torvalds/linux      # set the upstream repo
-          upstream-branch: master   # set the upstream branch to merge from
-          branch: master  # set the branch to merge to
+        run: |
+          git remote add upstream https://github.com/torvalds/linux.git
+          git pull --no-rebase --commit --no-edit upstream master
+          git push origin master
+        #uses: exions/merge-upstream@v1
+        #with:
+        #  upstream: torvalds/linux      # set the upstream repo
+        #  upstream-branch: master   # set the upstream branch to merge from
+        #  branch: master  # set the branch to merge to
   Build_kernel_with_changes:
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     needs: [merge-upstream]
