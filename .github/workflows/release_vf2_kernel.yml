@@ -44,3 +44,12 @@ jobs:
         cd /tmp/
         ls -R
 
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
+        files: |
+          /tmp/*.deb
