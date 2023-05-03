@@ -47,6 +47,7 @@ jobs:
     - name: Publish Repo
       uses: jrandiny/apt-repo-action@v1
       with:
+        page_branch: apt
         github_token: ${{ secrets.PAT }}
         arch: |
           riscv
