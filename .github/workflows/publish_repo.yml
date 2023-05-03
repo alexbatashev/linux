@@ -45,7 +45,7 @@ jobs:
         ls -R
     
     - name: Publish Repo
-      uses: jrandiny/apt-repo-action@v1
+      uses: jrandiny/apt-repo-action@v2.0.1
       with:
         page_branch: apt
         github_token: ${{ secrets.PAT }}
