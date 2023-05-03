@@ -49,9 +49,9 @@ jobs:
       with:
         page_branch: apt
         github_token: ${{ secrets.PAT }}
-        arch: |
+        repo_supported_arch: |
           riscv
-        version: |
+        repo_supported_version: |
           lunar
         file: /tmp/*.deb
         file_target_version: lunar
