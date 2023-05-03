@@ -37,7 +37,7 @@ jobs:
     - name: Generate release tag
       id: tag
       run: |
-        echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)"
+        echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)-$(date +'%Y.%m.%d_%H-%M')"
 
     - name: Display structure of downloaded files
       run: |
