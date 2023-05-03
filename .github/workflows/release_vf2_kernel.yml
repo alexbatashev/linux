@@ -80,5 +80,5 @@ jobs:
           /tmp/*.deb
           
     - name: Check for success
-      if: steps.release1.outcome == 'success' || steps.release2.outcome == 'success' || steps.release3.outcome == 'success'
+      if: ${{ failure() && (steps.release1.outcome == 'success' || steps.release2.outcome == 'success' || steps.release3.outcome == 'success') }}
       run: exit 0
