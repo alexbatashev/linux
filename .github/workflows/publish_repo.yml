@@ -46,8 +46,6 @@ jobs:
     
     - name: Publish Repo
       uses: jrandiny/apt-repo-action@v2.0.1
-      env: 
-        INPUT_DEBUG: true
       with:
         page_branch: apt
         github_token: ${{ secrets.PAT }}
@@ -60,3 +58,4 @@ jobs:
         public_key: ${{ secrets.PUBLIC }}
         private_key: ${{ secrets.PRIVATE }}
         key_passphrase: ${{ secrets.SECRET }}
+        debug: true
