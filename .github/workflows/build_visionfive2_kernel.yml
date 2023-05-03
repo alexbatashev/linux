@@ -48,20 +48,20 @@ jobs:
         path: /tmp/*.deb
         retention-days: 5
     
-    - name: Generate release tag
-      id: tag
-      run: |
-        echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)"
+  #  - name: Generate release tag
+  #    id: tag
+  #    run: |
+  #      echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)"
         
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
-        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
-        files: |
-          /tmp/*.deb
+   # - name: Release
+   #   uses: softprops/action-gh-release@v1
+   #   env:
+   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   #   with:
+   #     tag_name: ${{ steps.tag.outputs.release_tag }}
+   #     body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
+   #     files: |
+   #       /tmp/*.deb
           
   Release_Kernel:
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
