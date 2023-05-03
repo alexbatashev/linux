@@ -34,6 +34,9 @@ jobs:
 
     - name: Make kernel
       run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc`
+      
+    - name: Make modules
+      run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc`
 
     - name: Build .deb packages
       run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv bindeb-pkg
