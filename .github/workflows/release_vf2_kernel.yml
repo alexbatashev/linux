@@ -8,42 +8,70 @@ on:
   workflow_call:
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
+      options: --user root
 
     steps:
+    - name: Install dependencies
+      run: |
+        apt update
+        apt install -y curl jq unzip
+      
+    - name: Find Artifact
+      id: find_artifact
+      run: |
+        echo '::set-output name=artifact_id::$(curl -s -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{secrets.GITHUB_TOKEN}}"  -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/agreenbhm/linux/actions/artifacts | jq .artifacts[0].id)'
+      
+    - name: Download Artifact
+      run: |
+        curl -L -o /tmp/artifact.zip -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/agreenbhm/linux/actions/artifacts/${{ steps.find_artifact.outputs.artifact_id }}/zip
+    
+    - name: Extract Artifact
+      run: |
+        cd /tmp/
+        unzip artifact.zip
+        
     - name: Generate release tag
       id: tag
       run: |
-        echo "::set-output name=release_tag::Build_$(date +"%Y.%m.%d_%H-%M")"
-    
-    - name: Download workflow artifact
-      uses: dawidd6/action-download-artifact@v2.27.0
-      with:
-        workflow: build_visionfive2_kernel.yml
-        name: compiled_vf2_debs
-        branch: master
-        path: /tmp/
-        repo: 'agreenbhm/linux'
-        search_artifacts: true
-        github_token: ${{secrets.GITHUB_TOKEN}}
+        echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)-$(date +'%Y.%m.%d_%H-%M')"
 
-    #- name: Download artifacts    
-    #  uses: actions/download-artifact@v3
-    #  with:
-    #    name: compiled_vf2_debs
-    #    path: /tmp/
-    
     - name: Display structure of downloaded files
-      run: ls -R
-      working-directory: /tmp/
- 
- #   - name: Release
- #     uses: softprops/action-gh-release@v1
- #     env:
- #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
- #     with: |
- #       tag_name: ${{ steps.tag.outputs.release_tag }}
- #       body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
- #       files: |
- #         /tmp/*.deb
+      run: |
+        cd /tmp/
+        ls -R
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
+        files: |
+          /tmp/*.deb
+          
+    - name: Re-try Release
+      if: ${{ failure() }}
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
+        files: |
+          /tmp/*.deb
+
+    - name: Re-try Release Final
+      if: ${{ failure() }}
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
+        files: |
+          /tmp/*.deb

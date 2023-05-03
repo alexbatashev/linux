@@ -6,8 +6,8 @@ permissions:
 on:
   #push:
   #  branches: [ "master" ]
-  #pull_request:
-  #  branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
   workflow_dispatch:
   workflow_call:
 
@@ -34,6 +34,9 @@ jobs:
 
     - name: Make kernel
       run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc`
+      
+    - name: Make modules
+      run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc` modules
 
     - name: Build .deb packages
       run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv bindeb-pkg
@@ -48,17 +51,22 @@ jobs:
         path: /tmp/*.deb
         retention-days: 5
     
-    - name: Generate release tag
-      id: tag
-      run: |
-        echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)"
+  #  - name: Generate release tag
+  #    id: tag
+  #    run: |
+  #      echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)"
         
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
-        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
-        files: |
-          /tmp/*.deb
+   # - name: Release
+   #   uses: softprops/action-gh-release@v1
+   #   env:
+   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   #   with:
+   #     tag_name: ${{ steps.tag.outputs.release_tag }}
+   #     body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
+   #     files: |
+   #       /tmp/*.deb
+          
+  Release_Kernel:
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    needs: [build]
+    uses: ./.github/workflows/release_vf2_kernel.yml
