@@ -27,19 +27,30 @@ jobs:
         ref: master
       
     - name: Install dependencies
-      run: apt install -y build-essential debhelper #gcc-riscv64-linux-gnu
+      run: apt update && apt install -y build-essential debhelper #gcc-riscv64-linux-gnu
+      
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1.2
       
     - name: Make visionfive2_defconfig
-      run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv visionfive2_docker_defconfig
+      run: |
+        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv visionfive2_docker_defconfig
 
     - name: Make kernel
-      run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc`
+      run: |
+        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc`
       
     - name: Make modules
-      run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc` modules
+      run: |
+        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc` modules
 
     - name: Build .deb packages
-      run: make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv bindeb-pkg
+      run: |
+        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv bindeb-pkg
       
     - name: Copy .deb to /tmp
       run: cp ../*.deb /tmp/
