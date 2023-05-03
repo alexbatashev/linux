@@ -45,6 +45,7 @@ jobs:
         ls -R
 
     - name: Release
+      id: release1
       uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,6 +56,7 @@ jobs:
           /tmp/*.deb
           
     - name: Re-try Release
+      id: release2
       if: ${{ failure() }}
       uses: softprops/action-gh-release@v1
       env:
@@ -66,6 +68,7 @@ jobs:
           /tmp/*.deb
 
     - name: Re-try Release Final
+      id: release3
       if: ${{ failure() }}
       uses: softprops/action-gh-release@v1
       env:
@@ -75,3 +78,7 @@ jobs:
         body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
         files: |
           /tmp/*.deb
+          
+    - name: Check for success
+      if: steps.release1.outcome == 'success' || steps.release2.outcome == 'success' || steps.release3.outcome == 'success'
+      run: exit 0
