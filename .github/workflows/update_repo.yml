@@ -61,8 +61,8 @@ jobs:
       run: |
         export GPG_TTY=$(tty)
         echo $GPG_PRIVATE_KEY | base64 --decode | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --import
-        cat ./repo/dists/dev/Release | gpg gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs > ./repo/dists/dev/Release.gpg
-        cat ./repo/dists/dev/Release | gpg gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs --clearsign > ./repo/dists/dev/InRelease
+        cat ./repo/dists/dev/Release | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs > ./repo/dists/dev/Release.gpg
+        cat ./repo/dists/dev/Release | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs --clearsign > ./repo/dists/dev/InRelease
         
     - name: Git Add/Commit/Push repo to GH
       run: |
