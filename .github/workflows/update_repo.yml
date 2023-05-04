@@ -10,7 +10,6 @@ on:
 jobs:
   publish_apt:
     runs-on: ubuntu-latest
-    environment: apt
     container:
       image: ubuntu:latest
       options: --user root
