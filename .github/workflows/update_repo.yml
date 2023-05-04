@@ -50,52 +50,12 @@ jobs:
         apt-ftparchive packages pool/ | gzip -9 > dists/dev/main/binary-riscv64/Packages.gz
         cd ./dists/dev
         apt-ftparchive release . | grep -v ".*Release$" > Release
+        
+    - name: Git Add/Commit/Push repo to GH
+      run: |
+        cd ../../
+        echo `pwd`
+        git add .
+        git commit -m "Updating apt repo" 
     
-    - name: Generate release tag
-      id: tag
-      run: |
-        echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)-$(date +'%Y.%m.%d_%H-%M')"
 
-    - name: Display structure of downloaded files
-      run: |
-        cd /tmp/
-        ls -R
-
-    - name: Release
-      id: release1
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
-        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
-        files: |
-          /tmp/*.deb
-          
-    - name: Re-try Release
-      id: release2
-      if: ${{ failure() }}
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
-        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
-        files: |
-          /tmp/*.deb
-
-    - name: Re-try Release Final
-      id: release3
-      if: ${{ failure() }}
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
-        body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
-        files: |
-          /tmp/*.deb
-          
-    - name: Check for success
-      if: ${{ failure() && (steps.release1.outcome == 'success' || steps.release2.outcome == 'success' || steps.release3.outcome == 'success') }}
-      run: exit 0
