@@ -91,6 +91,10 @@ jobs:
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     needs: [build]
     uses: ./.github/workflows/update_repo.yml
+    secrets:
+      GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+      GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
+      GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
     
   Release_Kernel:
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
