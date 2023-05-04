@@ -20,20 +20,7 @@ jobs:
       run: |
         apt update
         apt install -y apt-utils git curl jq unzip gpg
-        
-    - name: Sign Repo
-      env:
-        GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
-        GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
-        GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
-      run: |
-        export GPG_TTY=$(tty)
-        echo $GPG_PRIVATE_KEY | base64 --decode | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --import
-        cat ./repo/dists/dev/Release | gpg gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs > ./repo/dists/dev/Release.gpg
-        cat ./repo/dists/dev/Release | gpg gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs --clearsign > ./repo/dists/dev/InRelease
-        ls -laht ./repo/dists/dev/
-        exit 1
-        
+               
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -65,6 +52,17 @@ jobs:
         apt-ftparchive packages pool/ | gzip -9 > dists/dev/main/binary-riscv64/Packages.gz
         cd ./dists/dev
         apt-ftparchive release . | grep -v ".*Release$" > Release
+        
+    - name: Sign Repo
+      env:
+        GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+        GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
+        GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
+      run: |
+        export GPG_TTY=$(tty)
+        echo $GPG_PRIVATE_KEY | base64 --decode | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --import
+        cat ./repo/dists/dev/Release | gpg gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs > ./repo/dists/dev/Release.gpg
+        cat ./repo/dists/dev/Release | gpg gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs --clearsign > ./repo/dists/dev/InRelease
         
     - name: Git Add/Commit/Push repo to GH
       run: |
