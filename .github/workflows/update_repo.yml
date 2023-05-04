@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: |
         apt update
-        apt install -y apt-utils git curl jq unzip gpg
+        apt install -y apt-utils git curl jq unzip gpg dpkg-dev
                
     - name: Checkout
       uses: actions/checkout@v3
