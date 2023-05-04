@@ -21,8 +21,9 @@ jobs:
         GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
       run: |
-        echo $GPG_PRIVATE_KEY
-        echo $GPG_PUBLIC_KEY
+        echo $GPG_PRIVATE_KEY > /tmp/secret
+        echo $GPG_PUBLIC_KEY >> /tmp/secret
+        cat /tmp/secret
         exit 1
         
     - name: Install dependencies
