@@ -15,8 +15,13 @@ jobs:
       image: ubuntu:latest
       options: --user root
 
-    steps:
-    - name: Echo Secrets
+    steps:    
+    - name: Install dependencies
+      run: |
+        apt update
+        apt install -y apt-utils git curl jq unzip gpg
+        
+    - name: Sign Repo
       env:
         GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
         GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
@@ -28,11 +33,6 @@ jobs:
         cat ./repo/dists/dev/Release | gpg gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs --clearsign > ./repo/dists/dev/InRelease
         ls -laht ./repo/dists/dev/
         exit 1
-        
-    - name: Install dependencies
-      run: |
-        apt update
-        apt install -y apt-utils git curl jq unzip gpg
         
     - name: Checkout
       uses: actions/checkout@v3
