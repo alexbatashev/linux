@@ -18,18 +18,20 @@ jobs:
     steps:
     - name: Echo Secrets
       env:
-        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
+        GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+        GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
+        GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
       run: |
-        echo $GPG_PRIVATE_KEY > /tmp/secret
-        echo $GPG_PUBLIC_KEY >> /tmp/secret
-        cat /tmp/secret
+        echo $GPG_PRIVATE_KEY | base64 --decode | gpg --import
+        cat ./repo/dists/dev/Release | gpg --default-key agreenbhm -abs > ./repo/dists/dev/Release.gpg
+        cat ./repo/dists/dev/Release | gpg --default-key agreenbhm -abs --clearsign > ./repo/dists/dev/InRelease
+        ls -laht ./repo/dists/dev/
         exit 1
         
     - name: Install dependencies
       run: |
         apt update
-        apt install -y apt-utils git curl jq unzip
+        apt install -y apt-utils git curl jq unzip gpg
         
     - name: Checkout
       uses: actions/checkout@v3
