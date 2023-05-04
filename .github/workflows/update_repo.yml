@@ -54,7 +54,6 @@ jobs:
         
     - name: Git Add/Commit/Push repo to GH
       run: |
-        cd ../../
         echo `pwd`
         git config --global user.email "merge-upstream-action@github.com"
         git config --global user.name "Merge Upstream Action"
