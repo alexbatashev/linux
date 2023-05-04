@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         apt update
-        apt install -y apt-utils curl jq unzip
+        apt install -y apt-utils git curl jq unzip
       
     - name: Find Artifact
       id: find_artifact
