@@ -43,16 +43,20 @@ jobs:
     
     - name: Replace repo .deb files
       run: |
-        rm -f ./repo/pool/main/*.deb
-        mv /tmp/*.deb ./repo/pool/main/
+        rm -f ./repo/riscv64/*.deb
+        #rm -f ./repo/pool/main/*.deb
+        #mv /tmp/*.deb ./repo/pool/main/
+        mv /tmp/*.deb ./repo/riscv64/
         
     - name: Create Packages and Release manifests
       run: | 
-        cd ./repo
-        apt-ftparchive packages pool/ > dists/dev/main/binary-riscv64/Packages
-        apt-ftparchive packages pool/ | gzip -9 > dists/dev/main/binary-riscv64/Packages.gz
-        cd ./dists/dev
-        apt-ftparchive release . | grep -v ".*Release$" > Release
+        cd ./repo/riscv64
+        #apt-ftparchive packages pool/ > dists/dev/main/binary-riscv64/Packages
+        dpkg-scanpackages -a riscv64 . > Packages
+        #apt-ftparchive packages pool/ | gzip -9 > dists/dev/main/binary-riscv64/Packages.gz
+        apt-ftparchive release . > Release
+        #cd ./dists/dev
+        #apt-ftparchive release . | grep -v ".*Release$" > Release
         
     - name: Sign Repo
       env:
@@ -62,8 +66,9 @@ jobs:
       run: |
         export GPG_TTY=$(tty)
         echo $GPG_PRIVATE_KEY | base64 --decode | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --import
-        cat ./repo/dists/dev/Release | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs > ./repo/dists/dev/Release.gpg
-        cat ./repo/dists/dev/Release | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs --clearsign > ./repo/dists/dev/InRelease
+        gpg -a --batch --clearsign --output ./repo/riscv64/InRelease --detach-sign --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" ./repo/riscv64/Release
+        #cat ./repo/dists/dev/Release | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs > ./repo/dists/dev/Release.gpg
+        #cat ./repo/dists/dev/Release | gpg --batch --pinentry-mode=loopback --yes  --passphrase "$GPG_PRIVATE_KEY_PASSWORD" --default-key agreenbhm -abs --clearsign > ./repo/dists/dev/InRelease
         
     - name: Git Add/Commit/Push repo to GH
       run: |
