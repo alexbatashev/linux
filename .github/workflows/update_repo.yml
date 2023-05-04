@@ -49,6 +49,7 @@ jobs:
     - name: Create Packages and Release manifests
       run: | 
         cd ./repo
+        apt-ftparchive packages pool/ > dists/dev/main/binary-riscv64/Packages
         apt-ftparchive packages pool/ | gzip -9 > dists/dev/main/binary-riscv64/Packages.gz
         cd ./dists/dev
         apt-ftparchive release . | grep -v ".*Release$" > Release
