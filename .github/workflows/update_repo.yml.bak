@@ -10,18 +10,11 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    environment: apt
     container:
       image: ubuntu:latest
       options: --user root
 
     steps:
-    - name: Echo Secrets
-      run: |
-        echo ${{ secrets.GPG_PRIVATE_KEY }}
-        echo ${{ secrets.GPG_PUBLIC_KEY }}
-        exit 1
-        
     - name: Install dependencies
       run: |
         apt update
