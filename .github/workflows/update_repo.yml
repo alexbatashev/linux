@@ -15,16 +15,16 @@ jobs:
       options: --user root
 
     steps:
+    - name: Install dependencies
+      run: |
+        apt update
+        apt install -y apt-utils git curl jq unzip
+        
     - name: Checkout
       uses: actions/checkout@v3
       with:
         ref: apt
         fetch-depth: 1 
-        
-    - name: Install dependencies
-      run: |
-        apt update
-        apt install -y apt-utils git curl jq unzip
       
     - name: Find Artifact
       id: find_artifact
