@@ -43,10 +43,9 @@ jobs:
         echo "::set-output name=release_tag::Build_$(date +"%Y.%m.%d_%H-%M")"
         
     - name: Configure LOCALVERSION
-      run: | 
-        sed -i 's/.*LOCALVERSION.*//g' .config
-        echo CONFIG_LOCALVERSION=\"${{ steps.tag.outputs.release_tag }}\" >> .config
-
+      run: |
+        sed -i "s/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION=\"${{ steps.tag.outputs.release_tag }}\"/g" .config
+        
     - name: Make kernel
       run: |
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
