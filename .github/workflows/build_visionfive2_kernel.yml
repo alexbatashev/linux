@@ -37,14 +37,14 @@ jobs:
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
         make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv visionfive2_docker_defconfig
         
-    - name: Generate release tag
-      id: tag
-      run: |
-        echo "::set-output name=release_tag::-$(date +"%Y.%m.%d-%H.%M")"
-        
-    - name: Configure LOCALVERSION
-      run: |
-        sed -i "s/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION=\"${{ steps.tag.outputs.release_tag }}\"/g" .config
+   # - name: Generate release tag
+   #   id: tag
+   #   run: |
+   #     echo "::set-output name=release_tag::-$(date +"%Y.%m.%d-%H.%M")"
+   #     
+   # - name: Configure LOCALVERSION
+   #   run: |
+   #     sed -i "s/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION=\"${{ steps.tag.outputs.release_tag }}\"/g" .config
         
     - name: Make kernel
       run: |
