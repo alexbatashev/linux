@@ -44,11 +44,13 @@ jobs:
         rm -f ./repo/pool/main/*.deb
         mv /tmp/*.deb ./repo/pool/main/
         
-    - name: Create Packages manifest
+    - name: Create Packages and Release manifests
       run: | 
         cd ./repo
         apt-ftparchive packages pool/ | gzip -9 > dists/dev/main/binary-riscv64/Packages.gz
-        
+        cd ./dists/dev
+        apt-ftparchive release . | grep -v ".*Release$" > Release
+    
     - name: Generate release tag
       id: tag
       run: |
