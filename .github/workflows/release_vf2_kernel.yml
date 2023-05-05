@@ -39,11 +39,10 @@ jobs:
     
     - name: Restore Cached Debs
       id: cache-debs-restore
-      uses: actions/cache/restore@v3
+      uses: actions/cache@v3
       with:
-        path: |
-          /tmp/
-        key: "${{ github.run_id }}-deb-cache"
+        path: /tmp/
+        key: "deb-cache-${{ github.run_id }}"
         
     - name: Generate release tag
       id: tag
