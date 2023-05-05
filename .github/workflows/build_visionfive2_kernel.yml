@@ -69,12 +69,20 @@ jobs:
     - name: Copy .deb to /tmp
       run: cp ../*.deb /tmp/
       
-    - name: 'Upload Artifact'
-      uses: actions/upload-artifact@v3
+    - name: Cache Debs
+      id: cache-debs-save
+      uses: actions/cache/save@v3
       with:
-        name: compiled_vf2_debs
-        path: /tmp/*.deb
-        retention-days: 5
+        path: |
+          /tmp/*.deb
+        key: ${{ GITHUB_RUN_ID }}
+      
+    #- name: 'Upload Artifact'
+    #  uses: actions/upload-artifact@v3
+    #  with:
+    #    name: compiled_vf2_debs
+    #    path: /tmp/*.deb
+    #    retention-days: 5
         
     - name: Push Git changes
       run: |
