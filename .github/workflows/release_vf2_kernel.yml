@@ -43,7 +43,7 @@ jobs:
       with:
         path: |
           /tmp/
-        key: ${{ GITHUB_RUN_ID }}-cache
+        key: ${{ env.GITHUB_RUN_ID }}-cache
         
     - name: Generate release tag
       id: tag
