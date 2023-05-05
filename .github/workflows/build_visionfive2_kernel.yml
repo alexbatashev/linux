@@ -71,19 +71,19 @@ jobs:
         rm -rf /tmp/*
         cp ../*.deb /tmp/
       
-    - name: Cache Debs
-      id: cache-debs-save
-      uses: actions/cache@v3
-      with:
-        path: /tmp/
-        key: "deb-cache-${{ github.run_id }}"
+   # - name: Cache Debs
+   #   id: cache-debs-save
+   #   uses: actions/cache@v3
+   #   with:
+   #     path: /tmp/
+   #     key: "deb-cache-${{ github.run_id }}"
       
-    #- name: 'Upload Artifact'
-    #  uses: actions/upload-artifact@v3
-    #  with:
-    #    name: compiled_vf2_debs
-    #    path: /tmp/*.deb
-    #    retention-days: 5
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        name: compiled_vf2_debs
+        path: /tmp/*.deb
+        retention-days: 5
         
     - name: Push Git changes
       run: |
@@ -93,16 +93,16 @@ jobs:
         git commit -m "Updating version" --no-edit
         git push origin master
 
-  Update_Repo:
-    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-    needs: [build]
-    uses: ./.github/workflows/update_repo.yml
-    secrets:
-      GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
-      GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
-      GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
+  #Update_Repo:
+  #  if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+  #  needs: [build]
+  #  uses: ./.github/workflows/update_repo.yml
+  #  secrets:
+  #    GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+  #    GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
+  #    GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
     
-  Release_Kernel:
-    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-    needs: [build]
-    uses: ./.github/workflows/release_vf2_kernel.yml
+  #Release_Kernel:
+  #  if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+  #  needs: [build]
+  #  uses: ./.github/workflows/release_vf2_kernel.yml
