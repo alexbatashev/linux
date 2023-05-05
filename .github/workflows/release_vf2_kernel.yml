@@ -2,15 +2,19 @@ name: Release VF2 Kernel
 
 permissions:
   contents: write
-  
+
 on:
   workflow_dispatch:
   workflow_call:
+  workflow_run:
+    workflows: [Build VF2 Kernel]
+    types: [completed]
 
 jobs:
   release:
     runs-on: ubuntu-latest
     #runs-on: self-hosted
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     container:
       image: ubuntu:latest
       options: --user root
