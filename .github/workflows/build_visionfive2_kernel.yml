@@ -53,19 +53,18 @@ jobs:
           
     - name: Make kernel
       run: |
-        #export KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }}
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }} -j`nproc`
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc`
       
     - name: Make modules
       run: |
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }} -j`nproc` modules
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc` modules
 
     - name: Build .deb packages
       run: |
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }} -j`nproc` bindeb-pkg
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc` bindeb-pkg
       
     - name: Copy .deb to /tmp
       run: cp ../*.deb /tmp/
@@ -76,17 +75,25 @@ jobs:
         name: compiled_vf2_debs
         path: /tmp/*.deb
         retention-days: 5
+        
+    - name: Push Git changes
+      run: |
+        git config --global user.email "merge-upstream-action@github.com"
+        git config --global user.name "Merge Upstream Action"
+        git add debian/changelog
+        git commit -m "Updating debian changelog" --no-edit
+        git push origin master
 
-#  Update_Repo:
-#    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-#    needs: [build]
-#    uses: ./.github/workflows/update_repo.yml
-#    secrets:
-#      GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
-#      GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
-#      GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
+  Update_Repo:
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    needs: [build]
+    uses: ./.github/workflows/update_repo.yml
+    secrets:
+      GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+      GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
+      GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
     
-#  Release_Kernel:
-#    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-#    needs: [build]
-#    uses: ./.github/workflows/release_vf2_kernel.yml
+  Release_Kernel:
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    needs: [build]
+    uses: ./.github/workflows/release_vf2_kernel.yml
