@@ -9,7 +9,8 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
       image: ubuntu:latest
       options: --user root
