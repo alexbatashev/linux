@@ -80,8 +80,8 @@ jobs:
       run: |
         git config --global user.email "merge-upstream-action@github.com"
         git config --global user.name "Merge Upstream Action"
-        git add debian/changelog
-        git commit -m "Updating debian changelog" --no-edit
+        git add -f .version
+        git commit -m "Updating version" --no-edit
         git push origin master
 
   Update_Repo:
