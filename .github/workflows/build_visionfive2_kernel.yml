@@ -50,16 +50,7 @@ jobs:
       run: |
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
         make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv visionfive2_docker_defconfig
-        
-   # - name: Generate release tag
-   #   id: tag
-   #   run: |
-   #     echo "::set-output name=release_tag::-$(date +"%Y.%m.%d-%H.%M")"
-   #     
-   # - name: Configure LOCALVERSION
-   #   run: |
-   #     sed -i "s/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION=\"${{ steps.tag.outputs.release_tag }}\"/g" .config
-        
+          
     - name: Make kernel
       run: |
         #export KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }}
@@ -85,32 +76,17 @@ jobs:
         name: compiled_vf2_debs
         path: /tmp/*.deb
         retention-days: 5
+
+#  Update_Repo:
+#    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+#    needs: [build]
+#    uses: ./.github/workflows/update_repo.yml
+#    secrets:
+#      GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+#      GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
+#      GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
     
-  #  - name: Generate release tag
-  #    id: tag
-  #    run: |
-  #      echo "::set-output name=release_tag::$(basename /tmp/linux-image-* | cut -d'_' -f2)"
-        
-   # - name: Release
-   #   uses: softprops/action-gh-release@v1
-   #   env:
-   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-   #   with:
-   #     tag_name: ${{ steps.tag.outputs.release_tag }}
-   #     body: Automated build of VisionFive 2 kernel .debs for Ubuntu.
-   #     files: |
-   #       /tmp/*.deb
-  
-  Update_Repo:
-    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-    needs: [build]
-    uses: ./.github/workflows/update_repo.yml
-    secrets:
-      GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
-      GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
-      GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
-    
-  Release_Kernel:
-    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-    needs: [build]
-    uses: ./.github/workflows/release_vf2_kernel.yml
+#  Release_Kernel:
+#    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+#    needs: [build]
+#    uses: ./.github/workflows/release_vf2_kernel.yml
