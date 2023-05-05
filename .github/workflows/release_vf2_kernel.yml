@@ -25,28 +25,26 @@ jobs:
         apt update
         apt install -y curl jq unzip
       
-    #- name: Find Artifact
-    #  id: find_artifact
-    #  run: |
-    #    echo "::set-output name=artifact_id::$(curl -s -L -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer ${{secrets.GITHUB_TOKEN}}\"  -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/agreenbhm/linux/actions/runs/$GITHUB_RUN_ID/artifacts | jq .artifacts[0].id)"
-    #    echo "Artifacts: $(curl -s -L -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer ${{secrets.GITHUB_TOKEN}}\"  -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/agreenbhm/linux/actions/runs/$GITHUB_RUN_ID/artifacts)"
-    #    #echo '::set-output name=artifact_id::$(curl -s -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{secrets.GITHUB_TOKEN}}"  -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/agreenbhm/linux/actions/artifacts?name=compiled_vf2_debs | jq .artifacts[0].id)'
+    - name: Find Artifact
+      id: find_artifact
+      run: |
+        echo '::set-output name=artifact_id::$(curl -s -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{secrets.GITHUB_TOKEN}}"  -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/agreenbhm/linux/actions/artifacts?name=compiled_vf2_debs | jq .artifacts[0].id)'
       
-    #- name: Download Artifact
-    #  run: |
-    #    curl -L -o /tmp/artifact.zip -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/agreenbhm/linux/actions/artifacts/${{ steps.find_artifact.outputs.artifact_id }}/zip
+    - name: Download Artifact
+      run: |
+        curl -L -o /tmp/artifact.zip -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/agreenbhm/linux/actions/artifacts/${{ steps.find_artifact.outputs.artifact_id }}/zip
     
-    #- name: Extract Artifact
-    #  run: |
-    #    cd /tmp/
-    #    unzip artifact.zip
+    - name: Extract Artifact
+      run: |
+        cd /tmp/
+        unzip artifact.zip
     
-    - name: Restore Cached Debs
-      id: cache-debs-restore
-      uses: actions/cache@v3
-      with:
-        path: /tmp/
-        key: "deb-cache-${{ github.run_id }}"
+    #- name: Restore Cached Debs
+    #  id: cache-debs-restore
+    #  uses: actions/cache@v3
+    #  with:
+    #    path: /tmp/
+    #    key: "deb-cache-${{ github.run_id }}"
         
     - name: Generate release tag
       id: tag
