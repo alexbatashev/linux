@@ -23,8 +23,9 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: |
-          /tmp/*.test
+          /tmp/
         key: testcache1
+        
     - name: Clear test file
       run: rm /tmp/1.test
       
