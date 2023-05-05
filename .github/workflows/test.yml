@@ -23,7 +23,8 @@ jobs:
       with:
         path: |
           /tmp/
-        key: "4896971543-deb-cache"
+        restore-keys: |
+          4896971543-deb-cache
         
     - name: List /tmp/
       run: ls -laR /tmp/
