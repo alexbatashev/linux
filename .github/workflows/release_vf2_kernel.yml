@@ -43,7 +43,7 @@ jobs:
       with:
         path: |
           /tmp/
-        key: ${{ env.GITHUB_RUN_ID }}-cache
+        key: "${{ github.run_id }}-deb-cache"
         
     - name: Generate release tag
       id: tag
