@@ -23,4 +23,4 @@ jobs:
   Recurse:
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     needs: [print_id]
-    uses: ./.github/workflows/test.yml
+    uses: ./.github/workflows/test2.yml
