@@ -20,3 +20,7 @@ jobs:
       run: |
         echo $GITHUB_RUN_ID
         
+  Recurse:
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    needs: [print_id]
+    uses: ./.github/workflows/test.yml
