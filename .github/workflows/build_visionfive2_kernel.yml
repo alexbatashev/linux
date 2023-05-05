@@ -62,19 +62,19 @@ jobs:
         
     - name: Make kernel
       run: |
-        export KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }}
+        #export KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }}
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc`
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }} -j`nproc`
       
     - name: Make modules
       run: |
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc` modules
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }} -j`nproc` modules
 
     - name: Build .deb packages
       run: |
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv bindeb-pkg
+        make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }} -j`nproc` bindeb-pkg
       
     - name: Copy .deb to /tmp
       run: cp ../*.deb /tmp/
