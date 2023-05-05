@@ -1,0 +1,23 @@
+name: Test2
+
+permissions:
+  contents: write
+  
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  print_id:
+    runs-on: ubuntu-latest
+    #runs-on: self-hosted
+    container:
+      image: ubuntu:latest
+      options: --user root
+
+    steps:    
+    - name: Print Run ID
+      run: |
+        echo $GITHUB_RUN_ID
+        
+  
