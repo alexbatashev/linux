@@ -75,7 +75,7 @@ jobs:
       with:
         path: |
           /tmp/*.deb
-        key: ${{ GITHUB_RUN_ID }}
+        key: ${{ GITHUB_RUN_ID }}-cache
       
     #- name: 'Upload Artifact'
     #  uses: actions/upload-artifact@v3
