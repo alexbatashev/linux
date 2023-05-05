@@ -1,0 +1,29 @@
+name: Test
+
+permissions:
+  contents: write
+  
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  test-cache:
+    runs-on: ubuntu-latest
+    #runs-on: self-hosted
+    container:
+      image: ubuntu:latest
+      options: --user root
+
+    steps:    
+
+    - name: Restore Cached Debs
+      id: cache-debs-restore
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          /tmp/
+        key: "4896971543-deb-cache"
+        
+    - name: List /tmp/
+      run: ls -laR /tmp/
