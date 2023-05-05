@@ -62,6 +62,7 @@ jobs:
         
     - name: Make kernel
       run: |
+        export KBUILD_BUILD_VERSION=${{ vars.KBUILD_BUILD_VERSION }}
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
         make CROSS_COMPILE=riscv64-linux-gnu- ARCH=riscv -j`nproc`
       
