@@ -31,14 +31,14 @@ jobs:
         #  upstream: torvalds/linux      # set the upstream repo
         #  upstream-branch: master   # set the upstream branch to merge from
         #  branch: master  # set the branch to merge to
-  Build_kernel_with_changes:
-    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-    needs: [merge-upstream]
-    uses: ./.github/workflows/build_visionfive2_kernel.yml
-    secrets:
-      GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
-      GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
-      GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
+  #Build_kernel_with_changes:
+  #  if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+  #  needs: [merge-upstream]
+  #  uses: ./.github/workflows/build_visionfive2_kernel.yml
+  #  secrets:
+  #    GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+  #    GPG_PUBLIC_KEY: "${{ secrets.GPG_PUBLIC_KEY }}"
+  #    GPG_PRIVATE_KEY_PASSWORD: "${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}"
 
     
 
