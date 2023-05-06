@@ -9,17 +9,20 @@ on:
   pull_request:
     branches: [ "master" ]
   workflow_dispatch:
+  workflow_run:
+    workflows: [Daily Upstream Merge]
+    types: [completed]
   workflow_call:
-    secrets:
-      GPG_PRIVATE_KEY:
-        description: 'GPG Private Key'
-        required: True
-      GPG_PUBLIC_KEY:
-        description: 'GPG Public Key'
-        required: True
-      GPG_PRIVATE_KEY_PASSWORD:
-        description: 'GPG Private Key Password'
-        required: True
+  #  secrets:
+  #    GPG_PRIVATE_KEY:
+  #      description: 'GPG Private Key'
+  #      required: True
+  #    GPG_PUBLIC_KEY:
+  #      description: 'GPG Public Key'
+  #      required: True
+  #    GPG_PRIVATE_KEY_PASSWORD:
+  #      description: 'GPG Private Key Password'
+  #      required: True
 
 jobs:
   build:
