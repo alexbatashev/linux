@@ -820,10 +820,8 @@ static struct module_attribute modinfo_refcnt =
 void __module_get(struct module *module)
 {
 	if (module) {
-		preempt_disable();
 		atomic_inc(&module->refcnt);
 		trace_module_get(module, _RET_IP_);
-		preempt_enable();
 	}
 }
 EXPORT_SYMBOL(__module_get);
@@ -833,15 +831,12 @@ bool try_module_get(struct module *module)
 	bool ret = true;
 
 	if (module) {
-		preempt_disable();
 		/* Note: here, we can fail to get a reference */
 		if (likely(module_is_live(module) &&
 			   atomic_inc_not_zero(&module->refcnt) != 0))
 			trace_module_get(module, _RET_IP_);
 		else
 			ret = false;
-
-		preempt_enable();
 	}
 	return ret;
 }
@@ -852,11 +847,9 @@ void module_put(struct module *module)
 	int ret;
 
 	if (module) {
-		preempt_disable();
 		ret = atomic_dec_if_positive(&module->refcnt);
 		WARN_ON(ret < 0);	/* Failed to put refcount */
 		trace_module_put(module, _RET_IP_);
-		preempt_enable();
 	}
 }
 EXPORT_SYMBOL(module_put);
@@ -1521,14 +1514,14 @@ static void __layout_sections(struct module *mod, struct load_info *info, bool i
 		MOD_RODATA,
 		MOD_RO_AFTER_INIT,
 		MOD_DATA,
-		MOD_INVALID,	/* This is needed to match the masks array */
+		MOD_DATA,
 	};
 	static const int init_m_to_mem_type[] = {
 		MOD_INIT_TEXT,
 		MOD_INIT_RODATA,
 		MOD_INVALID,
 		MOD_INIT_DATA,
-		MOD_INVALID,	/* This is needed to match the masks array */
+		MOD_INIT_DATA,
 	};
 
 	for (m = 0; m < ARRAY_SIZE(masks); ++m) {
@@ -3057,14 +3050,83 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
 	return load_module(&info, uargs, 0);
 }
 
-static int file_init_module(struct file *file, const char __user * uargs, int flags)
+struct idempotent {
+	const void *cookie;
+	struct hlist_node entry;
+	struct completion complete;
+	int ret;
+};
+
+#define IDEM_HASH_BITS 8
+static struct hlist_head idem_hash[1 << IDEM_HASH_BITS];
+static DEFINE_SPINLOCK(idem_lock);
+
+static bool idempotent(struct idempotent *u, const void *cookie)
 {
+	int hash = hash_ptr(cookie, IDEM_HASH_BITS);
+	struct hlist_head *head = idem_hash + hash;
+	struct idempotent *existing;
+	bool first;
+
+	u->ret = 0;
+	u->cookie = cookie;
+	init_completion(&u->complete);
+
+	spin_lock(&idem_lock);
+	first = true;
+	hlist_for_each_entry(existing, head, entry) {
+		if (existing->cookie != cookie)
+			continue;
+		first = false;
+		break;
+	}
+	hlist_add_head(&u->entry, idem_hash + hash);
+	spin_unlock(&idem_lock);
+
+	return !first;
+}
+
+/*
+ * We were the first one with 'cookie' on the list, and we ended
+ * up completing the operation. We now need to walk the list,
+ * remove everybody - which includes ourselves - fill in the return
+ * value, and then complete the operation.
+ */
+static void idempotent_complete(struct idempotent *u, int ret)
+{
+	const void *cookie = u->cookie;
+	int hash = hash_ptr(cookie, IDEM_HASH_BITS);
+	struct hlist_head *head = idem_hash + hash;
+	struct hlist_node *next;
+	struct idempotent *pos;
+
+	spin_lock(&idem_lock);
+	hlist_for_each_entry_safe(pos, next, head, entry) {
+		if (pos->cookie != cookie)
+			continue;
+		hlist_del(&pos->entry);
+		pos->ret = ret;
+		complete(&pos->complete);
+	}
+	spin_unlock(&idem_lock);
+}
+
+static int init_module_from_file(struct file *f, const char __user * uargs, int flags)
+{
+	struct idempotent idem;
 	struct load_info info = { };
 	void *buf = NULL;
-	int len;
+	int len, ret;
 
-	len = kernel_read_file(file, 0, &buf, INT_MAX, NULL,
-				       READING_MODULE);
+	if (!f || !(f->f_mode & FMODE_READ))
+		return -EBADF;
+
+	if (idempotent(&idem, file_inode(f))) {
+		wait_for_completion(&idem.complete);
+		return idem.ret;
+	}
+
+	len = kernel_read_file(f, 0, &buf, INT_MAX, NULL, READING_MODULE);
 	if (len < 0) {
 		mod_stat_inc(&failed_kreads);
 		mod_stat_add_long(len, &invalid_kread_bytes);
@@ -3084,27 +3146,15 @@ static int file_init_module(struct file *file, const char __user * uargs, int fl
 		info.len = len;
 	}
 
-	return load_module(&info, uargs, flags);
-}
-
-/*
- * kernel_read_file() will already deny write access, but module
- * loading wants _exclusive_ access to the file, so we do that
- * here, along with basic sanity checks.
- */
-static int prepare_file_for_module_load(struct file *file)
-{
-	if (!file || !(file->f_mode & FMODE_READ))
-		return -EBADF;
-	if (!S_ISREG(file_inode(file)->i_mode))
-		return -EINVAL;
-	return exclusive_deny_write_access(file);
+	ret = load_module(&info, uargs, flags);
+	idempotent_complete(&idem, ret);
+	return ret;
 }
 
 SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 {
-	struct fd f;
 	int err;
+	struct fd f;
 
 	err = may_init_module();
 	if (err)
@@ -3118,11 +3168,7 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 		return -EINVAL;
 
 	f = fdget(fd);
-	err = prepare_file_for_module_load(f.file);
-	if (!err) {
-		err = file_init_module(f.file, uargs, flags);
-		allow_write_access(f.file);
-	}
+	err = init_module_from_file(f.file, uargs, flags);
 	fdput(f);
 	return err;
 }

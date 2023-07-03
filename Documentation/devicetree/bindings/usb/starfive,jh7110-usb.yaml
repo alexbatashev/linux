@@ -13,37 +13,34 @@ properties:
   compatible:
     const: starfive,jh7110-usb
 
-  reg:
-    items:
-      - description: OTG controller registers
-      - description: XHCI Host controller registers
-      - description: DEVICE controller registers
+  ranges: true
 
-  reg-names:
+  starfive,stg-syscon:
+    $ref: /schemas/types.yaml#/definitions/phandle-array
     items:
-      - const: otg
-      - const: xhci
-      - const: dev
+      - items:
+          - description: phandle to System Register Controller stg_syscon node.
+          - description: dr mode register offset of STG_SYSCONSAIF__SYSCFG register for USB.
+    description:
+      The phandle to System Register Controller syscon node and the offset
+      of STG_SYSCONSAIF__SYSCFG register for USB.
 
-  interrupts:
-    items:
-      - description: XHCI host controller interrupt
-      - description: Device controller interrupt
-      - description: OTG/DRD controller interrupt
+  dr_mode:
+    enum: [host, otg, peripheral]
 
-  interrupt-names:
-    items:
-      - const: host
-      - const: peripheral
-      - const: otg
+  "#address-cells":
+    enum: [1, 2]
+
+  "#size-cells":
+    enum: [1, 2]
 
   clocks:
     items:
-      - description: lpm clock
-      - description: stb clock
-      - description: apb clock
-      - description: axi clock
-      - description: utmi apb clock
+      - description: link power management clock
+      - description: standby clock
+      - description: APB clock
+      - description: AXI clock
+      - description: UTMI APB clock
 
   clock-names:
     items:
@@ -55,70 +52,43 @@ properties:
 
   resets:
     items:
-      - description: PWRUP reset
+      - description: Power up reset
       - description: APB clock reset
       - description: AXI clock reset
-      - description: UTMI_APB clock reset
+      - description: UTMI APB clock reset
 
   reset-names:
     items:
       - const: pwrup
       - const: apb
       - const: axi
-      - const: utmi
+      - const: utmi_apb
 
-  starfive,stg-syscon:
-    $ref: /schemas/types.yaml#/definitions/phandle-array
-    items:
-      items:
-        - description: phandle to System Register Controller stg_syscon node.
-        - description: register offset of STG_SYSCONSAIF__SYSCFG register for USB.
-    description:
-      The phandle to System Register Controller syscon node and the offset
-      of STG_SYSCONSAIF__SYSCFG register for USB.
-
-  dr_mode:
-    enum: [host, otg, peripheral]
-
-  phys:
-    minItems: 1
-    maxItems: 2
-
-  phy-names:
-    minItems: 1
-    maxItems: 2
-    items:
-      anyOf:
-        - const: usb2-phy
-        - const: usb3-phy
+patternProperties:
+  "^usb@[0-9a-f]+$":
+    $ref: cdns,usb3.yaml#
+    description: Required child node
 
 required:
   - compatible
-  - reg
-  - reg-names
-  - interrupts
-  - interrupt-names
+  - ranges
+  - starfive,stg-syscon
+  - '#address-cells'
+  - '#size-cells'
+  - dr_mode
   - clocks
   - resets
-  - starfive,stg-syscon
-  - dr_mode
 
 additionalProperties: false
 
 examples:
   - |
-    bus {
-      #address-cells = <2>;
-      #size-cells = <2>;
-
-      usb@10100000 {
+    usb@10100000 {
         compatible = "starfive,jh7110-usb";
-        reg = <0x0 0x10100000 0x0 0x10000>,
-              <0x0 0x10110000 0x0 0x10000>,
-              <0x0 0x10120000 0x0 0x10000>;
-        reg-names = "otg", "xhci", "dev";
-        interrupts = <100>, <108>, <110>;
-        interrupt-names = "host", "peripheral", "otg";
+        ranges = <0x0 0x10100000 0x100000>;
+        #address-cells = <1>;
+        #size-cells = <1>;
+        starfive,stg-syscon = <&stg_syscon 0x4>;
         clocks = <&syscrg 4>,
                  <&stgcrg 5>,
                  <&stgcrg 1>,
@@ -129,8 +99,17 @@ examples:
                  <&stgcrg 8>,
                  <&stgcrg 7>,
                  <&stgcrg 9>;
-        reset-names = "pwrup", "apb", "axi", "utmi";
-        starfive,stg-syscon = <&stg_syscon 0x4>;
+        reset-names = "pwrup", "apb", "axi", "utmi_apb";
         dr_mode = "host";
-      };
+
+        usb@0 {
+            compatible = "cdns,usb3";
+            reg = <0x0 0x10000>,
+                  <0x10000 0x10000>,
+                  <0x20000 0x10000>;
+            reg-names = "otg", "xhci", "dev";
+            interrupts = <100>, <108>, <110>;
+            interrupt-names = "host", "peripheral", "otg";
+            maximum-speed = "super-speed";
+        };
     };

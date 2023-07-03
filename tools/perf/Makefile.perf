@@ -128,6 +128,10 @@ include ../scripts/utilities.mak
 #
 # Define BUILD_NONDISTRO to enable building an linking against libbfd and
 # libiberty distribution license incompatible libraries.
+#
+# Define EXTRA_TESTS to enable building extra tests useful mainly to perf
+# developers, such as:
+#	x86 instruction decoder - new instructions test
 
 # As per kernel Makefile, avoid funny character set dependencies
 unexport LC_ALL
@@ -181,7 +185,6 @@ HOSTCC  ?= gcc
 HOSTLD  ?= ld
 HOSTAR  ?= ar
 CLANG   ?= clang
-LLVM_STRIP ?= llvm-strip
 
 PKG_CONFIG = $(CROSS_COMPILE)pkg-config
 
@@ -1083,7 +1086,7 @@ $(BPFTOOL): | $(SKEL_TMP_OUT)
 
 $(SKEL_TMP_OUT)/%.bpf.o: util/bpf_skel/%.bpf.c $(LIBBPF) | $(SKEL_TMP_OUT)
 	$(QUIET_CLANG)$(CLANG) -g -O2 -target bpf -Wall -Werror $(BPF_INCLUDE) $(TOOLS_UAPI_INCLUDE) \
-	  -c $(filter util/bpf_skel/%.bpf.c,$^) -o $@ && $(LLVM_STRIP) -g $@
+	  -c $(filter util/bpf_skel/%.bpf.c,$^) -o $@
 
 $(SKEL_OUT)/%.skel.h: $(SKEL_TMP_OUT)/%.bpf.o | $(BPFTOOL)
 	$(QUIET_GENSKEL)$(BPFTOOL) gen skeleton $< > $@
