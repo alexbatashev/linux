@@ -17,7 +17,6 @@
 #include <linux/mfd/syscon.h>
 #include <linux/module.h>
 #include <linux/of.h>
-#include <linux/of_device.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
 
@@ -2361,7 +2360,7 @@ static int npcm_i2c_probe_bus(struct platform_device *pdev)
 	return 0;
 }
 
-static int npcm_i2c_remove_bus(struct platform_device *pdev)
+static void npcm_i2c_remove_bus(struct platform_device *pdev)
 {
 	unsigned long lock_flags;
 	struct npcm_i2c *bus = platform_get_drvdata(pdev);
@@ -2371,7 +2370,6 @@ static int npcm_i2c_remove_bus(struct platform_device *pdev)
 	npcm_i2c_disable(bus);
 	spin_unlock_irqrestore(&bus->lock, lock_flags);
 	i2c_del_adapter(&bus->adap);
-	return 0;
 }
 
 static const struct of_device_id npcm_i2c_bus_of_table[] = {
@@ -2383,7 +2381,7 @@ MODULE_DEVICE_TABLE(of, npcm_i2c_bus_of_table);
 
 static struct platform_driver npcm_i2c_bus_driver = {
 	.probe = npcm_i2c_probe_bus,
-	.remove = npcm_i2c_remove_bus,
+	.remove_new = npcm_i2c_remove_bus,
 	.driver = {
 		.name = "nuvoton-i2c",
 		.of_match_table = npcm_i2c_bus_of_table,

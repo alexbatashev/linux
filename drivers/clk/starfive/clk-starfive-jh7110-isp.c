@@ -2,7 +2,11 @@
 /*
  * StarFive JH7110 Image-Signal-Process Clock Driver
  *
+<<<<<<< HEAD
  * Copyright (C) 2022 StarFive Technology Co., Ltd.
+=======
+ * Copyright (C) 2022-2023 StarFive Technology Co., Ltd.
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
  */
 
 #include <linux/clk.h>
@@ -23,6 +27,7 @@
 #define JH7110_ISPCLK_DVP_CLK			(JH7110_ISPCLK_END + 3)
 #define JH7110_ISPCLK_EXT_END			(JH7110_ISPCLK_END + 4)
 
+<<<<<<< HEAD
 /* ISP domian clocks */
 struct isp_top_crg {
 	struct clk_bulk_data *top_clks;
@@ -30,6 +35,8 @@ struct isp_top_crg {
 	void __iomem *base;
 };
 
+=======
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 static struct clk_bulk_data jh7110_isp_top_clks[] = {
 	{ .id = "isp_top_core" },
 	{ .id = "isp_top_axi" }
@@ -69,6 +76,7 @@ static const struct jh71x0_clk_data jh7110_ispclk_data[] = {
 		    JH7110_ISPCLK_DVP_INV),
 };
 
+<<<<<<< HEAD
 static struct isp_top_crg *top_crg_from(void __iomem **base)
 {
 	return container_of(base, struct isp_top_crg, base);
@@ -84,6 +92,11 @@ static inline int jh7110_isp_top_crg_init(struct jh71x0_clk_priv *priv, struct i
 	ret = devm_clk_bulk_get(priv->dev, top->top_clks_num, top->top_clks);
 	if (ret)
 		return dev_err_probe(priv->dev, ret, "failed to get top clocks\n");
+=======
+static inline int jh7110_isp_top_rst_init(struct jh71x0_clk_priv *priv)
+{
+	struct reset_control *top_rsts;
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 
 	/* The resets should be shared and other ISP modules will use its. */
 	top_rsts = devm_reset_control_array_get_shared(priv->dev);
@@ -91,10 +104,13 @@ static inline int jh7110_isp_top_crg_init(struct jh71x0_clk_priv *priv, struct i
 		return dev_err_probe(priv->dev, PTR_ERR(top_rsts),
 				     "failed to get top resets\n");
 
+<<<<<<< HEAD
 	ret = clk_bulk_prepare_enable(top->top_clks_num, top->top_clks);
 	if (ret)
 		return dev_err_probe(priv->dev, ret, "failed to enable top clocks\n");
 
+=======
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 	return reset_control_deassert(top_rsts);
 }
 
@@ -109,10 +125,39 @@ static struct clk_hw *jh7110_ispclk_get(struct of_phandle_args *clkspec, void *d
 	return ERR_PTR(-EINVAL);
 }
 
+<<<<<<< HEAD
 static int jh7110_ispcrg_probe(struct platform_device *pdev)
 {
 	struct jh71x0_clk_priv *priv;
 	struct isp_top_crg *top;
+=======
+#ifdef CONFIG_PM
+static int jh7110_ispcrg_suspend(struct device *dev)
+{
+	struct jh7110_top_sysclk *top = dev_get_drvdata(dev);
+
+	clk_bulk_disable_unprepare(top->top_clks_num, top->top_clks);
+
+	return 0;
+}
+
+static int jh7110_ispcrg_resume(struct device *dev)
+{
+	struct jh7110_top_sysclk *top = dev_get_drvdata(dev);
+
+	return clk_bulk_prepare_enable(top->top_clks_num, top->top_clks);
+}
+
+static const struct dev_pm_ops jh7110_ispcrg_pm_ops = {
+	RUNTIME_PM_OPS(jh7110_ispcrg_suspend, jh7110_ispcrg_resume, NULL)
+};
+#endif
+
+static int jh7110_ispcrg_probe(struct platform_device *pdev)
+{
+	struct jh71x0_clk_priv *priv;
+	struct jh7110_top_sysclk *top;
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 	unsigned int idx;
 	int ret;
 
@@ -132,17 +177,34 @@ static int jh7110_ispcrg_probe(struct platform_device *pdev)
 	if (IS_ERR(priv->base))
 		return PTR_ERR(priv->base);
 
+<<<<<<< HEAD
+=======
+	top->top_clks = jh7110_isp_top_clks;
+	top->top_clks_num = ARRAY_SIZE(jh7110_isp_top_clks);
+	ret = devm_clk_bulk_get(priv->dev, top->top_clks_num, top->top_clks);
+	if (ret)
+		return dev_err_probe(priv->dev, ret, "failed to get main clocks\n");
+	dev_set_drvdata(priv->dev, top);
+
+	/* enable power domain and clocks */
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 	pm_runtime_enable(priv->dev);
 	ret = pm_runtime_get_sync(priv->dev);
 	if (ret < 0)
 		return dev_err_probe(priv->dev, ret, "failed to turn on power\n");
 
+<<<<<<< HEAD
 	ret = jh7110_isp_top_crg_init(priv, top);
 	if (ret)
 		goto err_clk;
 
 	top->base = priv->base;
 	dev_set_drvdata(priv->dev, (void *)(&top->base));
+=======
+	ret = jh7110_isp_top_rst_init(priv);
+	if (ret)
+		goto err_exit;
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 
 	for (idx = 0; idx < JH7110_ISPCLK_END; idx++) {
 		u32 max = jh7110_ispclk_data[idx].max;
@@ -193,8 +255,11 @@ static int jh7110_ispcrg_probe(struct platform_device *pdev)
 	return 0;
 
 err_exit:
+<<<<<<< HEAD
 	clk_bulk_disable_unprepare(top->top_clks_num, top->top_clks);
 err_clk:
+=======
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 	pm_runtime_put_sync(priv->dev);
 	pm_runtime_disable(priv->dev);
 	return ret;
@@ -202,10 +267,14 @@ err_clk:
 
 static int jh7110_ispcrg_remove(struct platform_device *pdev)
 {
+<<<<<<< HEAD
 	void __iomem **base = dev_get_drvdata(&pdev->dev);
 	struct isp_top_crg *top = top_crg_from(base);
 
 	clk_bulk_disable_unprepare(top->top_clks_num, top->top_clks);
+=======
+	pm_runtime_put_sync(&pdev->dev);
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 	pm_runtime_disable(&pdev->dev);
 
 	return 0;
@@ -223,6 +292,10 @@ static struct platform_driver jh7110_ispcrg_driver = {
 	.driver = {
 		.name = "clk-starfive-jh7110-isp",
 		.of_match_table = jh7110_ispcrg_match,
+<<<<<<< HEAD
+=======
+		.pm = pm_ptr(&jh7110_ispcrg_pm_ops),
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 	},
 };
 module_platform_driver(jh7110_ispcrg_driver);

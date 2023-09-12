@@ -17,7 +17,6 @@
 *.bin
 *.bz2
 *.c.[012]*.*
-*.cover
 *.dt.yaml
 *.dtb
 *.dtbo
@@ -35,7 +34,6 @@
 *.lz4
 *.lzma
 *.lzo
-*.mbx
 *.mod
 *.mod.c
 *.o
@@ -52,7 +50,6 @@
 *.symversions
 *.tab.[ch]
 *.tar
-*.usyms
 *.xz
 *.zst
 Module.symvers
@@ -78,7 +75,7 @@ modules.order
 #
 # RPM spec file (make rpm-pkg)
 #
-/*.spec
+/kernel.spec
 /rpmbuild/
 
 #
@@ -113,7 +110,6 @@ modules.order
 #
 /include/config/
 /include/generated/
-/include/ksym/
 /arch/*/include/generated/
 
 # stgit generated dirs

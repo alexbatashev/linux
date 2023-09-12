@@ -416,13 +416,19 @@ out:
 	return rc;
 }
 
+struct send_req_vars {
+	struct smb2_transform_hdr tr_hdr;
+	struct smb_rqst rqst[MAX_COMPOUND];
+	struct kvec iov;
+};
+
 static int
 smb_send_rqst(struct TCP_Server_Info *server, int num_rqst,
 	      struct smb_rqst *rqst, int flags)
 {
-	struct kvec iov;
-	struct smb2_transform_hdr *tr_hdr;
-	struct smb_rqst cur_rqst[MAX_COMPOUND];
+	struct send_req_vars *vars;
+	struct smb_rqst *cur_rqst;
+	struct kvec *iov;
 	int rc;
 
 	if (!(flags & CIFS_TRANSFORM_REQ))
@@ -436,16 +442,15 @@ smb_send_rqst(struct TCP_Server_Info *server, int num_rqst,
 		return -EIO;
 	}
 
-	tr_hdr = kzalloc(sizeof(*tr_hdr), GFP_NOFS);
-	if (!tr_hdr)
+	vars = kzalloc(sizeof(*vars), GFP_NOFS);
+	if (!vars)
 		return -ENOMEM;
+	cur_rqst = vars->rqst;
+	iov = &vars->iov;
 
-	memset(&cur_rqst[0], 0, sizeof(cur_rqst));
-	memset(&iov, 0, sizeof(iov));
-
-	iov.iov_base = tr_hdr;
-	iov.iov_len = sizeof(*tr_hdr);
-	cur_rqst[0].rq_iov = &iov;
+	iov->iov_base = &vars->tr_hdr;
+	iov->iov_len = sizeof(vars->tr_hdr);
+	cur_rqst[0].rq_iov = iov;
 	cur_rqst[0].rq_nvec = 1;
 
 	rc = server->ops->init_transform_rq(server, num_rqst + 1,
@@ -456,7 +461,7 @@ smb_send_rqst(struct TCP_Server_Info *server, int num_rqst,
 	rc = __smb_send_rqst(server, num_rqst + 1, &cur_rqst[0]);
 	smb3_free_compound_rqst(num_rqst, &cur_rqst[1]);
 out:
-	kfree(tr_hdr);
+	kfree(vars);
 	return rc;
 }
 
@@ -522,6 +527,16 @@ wait_for_free_credits(struct TCP_Server_Info *server, const int num_credits,
 	}
 
 	while (1) {
+		spin_unlock(&server->req_lock);
+
+		spin_lock(&server->srv_lock);
+		if (server->tcpStatus == CifsExiting) {
+			spin_unlock(&server->srv_lock);
+			return -ENOENT;
+		}
+		spin_unlock(&server->srv_lock);
+
+		spin_lock(&server->req_lock);
 		if (*credits < num_credits) {
 			scredits = *credits;
 			spin_unlock(&server->req_lock);
@@ -547,15 +562,6 @@ wait_for_free_credits(struct TCP_Server_Info *server, const int num_credits,
 				return -ERESTARTSYS;
 			spin_lock(&server->req_lock);
 		} else {
-			spin_unlock(&server->req_lock);
-
-			spin_lock(&server->srv_lock);
-			if (server->tcpStatus == CifsExiting) {
-				spin_unlock(&server->srv_lock);
-				return -ENOENT;
-			}
-			spin_unlock(&server->srv_lock);
-
 			/*
 			 * For normal commands, reserve the last MAX_COMPOUND
 			 * credits to compound requests.
@@ -569,7 +575,6 @@ wait_for_free_credits(struct TCP_Server_Info *server, const int num_credits,
 			 * for servers that are slow to hand out credits on
 			 * new sessions.
 			 */
-			spin_lock(&server->req_lock);
 			if (!optype && num_credits == 1 &&
 			    server->in_flight > 2 * MAX_COMPOUND &&
 			    *credits <= MAX_COMPOUND) {

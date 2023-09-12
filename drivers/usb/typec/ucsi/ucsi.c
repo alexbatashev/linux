@@ -785,6 +785,8 @@ static void ucsi_unregister_partner(struct ucsi_connector *con)
 	if (!con->partner)
 		return;
 
+	typec_set_mode(con->port, TYPEC_STATE_SAFE);
+
 	ucsi_unregister_partner_pdos(con);
 	ucsi_unregister_altmodes(con, UCSI_RECIPIENT_SOP);
 	typec_unregister_partner(con->partner);
@@ -810,6 +812,21 @@ static void ucsi_partner_change(struct ucsi_connector *con)
 		break;
 	default:
 		break;
+	}
+
+	if (con->status.flags & UCSI_CONSTAT_CONNECTED) {
+		switch (UCSI_CONSTAT_PARTNER_TYPE(con->status.flags)) {
+		case UCSI_CONSTAT_PARTNER_TYPE_DEBUG:
+			typec_set_mode(con->port, TYPEC_MODE_DEBUG);
+			break;
+		case UCSI_CONSTAT_PARTNER_TYPE_AUDIO:
+			typec_set_mode(con->port, TYPEC_MODE_AUDIO);
+			break;
+		default:
+			if (UCSI_CONSTAT_PARTNER_FLAGS(con->status.flags) ==
+					UCSI_CONSTAT_PARTNER_FLAG_USB)
+				typec_set_mode(con->port, TYPEC_STATE_USB);
+		}
 	}
 
 	/* Only notify USB controller if partner supports USB data */
@@ -1513,6 +1530,7 @@ EXPORT_SYMBOL_GPL(ucsi_create);
  */
 void ucsi_destroy(struct ucsi *ucsi)
 {
+	ucsi_debugfs_unregister(ucsi);
 	kfree(ucsi);
 }
 EXPORT_SYMBOL_GPL(ucsi_destroy);
@@ -1535,6 +1553,7 @@ int ucsi_register(struct ucsi *ucsi)
 
 	queue_delayed_work(system_long_wq, &ucsi->work, 0);
 
+	ucsi_debugfs_register(ucsi);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(ucsi_register);
@@ -1593,6 +1612,19 @@ void ucsi_unregister(struct ucsi *ucsi)
 	kfree(ucsi->connector);
 }
 EXPORT_SYMBOL_GPL(ucsi_unregister);
+
+static int __init ucsi_module_init(void)
+{
+	ucsi_debugfs_init();
+	return 0;
+}
+module_init(ucsi_module_init);
+
+static void __exit ucsi_module_exit(void)
+{
+	ucsi_debugfs_exit();
+}
+module_exit(ucsi_module_exit);
 
 MODULE_AUTHOR("Heikki Krogerus <heikki.krogerus@linux.intel.com>");
 MODULE_LICENSE("GPL v2");

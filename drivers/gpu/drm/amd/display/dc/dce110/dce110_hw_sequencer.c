@@ -209,9 +209,6 @@ static bool dce110_enable_display_power_gating(
 	struct dc_context *ctx = dc->ctx;
 	unsigned int underlay_idx = dc->res_pool->underlay_pipe_index;
 
-	if (IS_FPGA_MAXIMUS_DC(ctx->dce_environment))
-		return true;
-
 	if (power_gating == PIPE_GATING_CONTROL_INIT)
 		cntl = ASIC_PIPE_INIT;
 	else if (power_gating == PIPE_GATING_CONTROL_ENABLE)
@@ -222,7 +219,7 @@ static bool dce110_enable_display_power_gating(
 	if (controller_id == underlay_idx)
 		controller_id = CONTROLLER_ID_UNDERLAY0 - 1;
 
-	if (power_gating != PIPE_GATING_CONTROL_INIT || controller_id == 0){
+	if (power_gating != PIPE_GATING_CONTROL_INIT || controller_id == 0) {
 
 		bp_result = dcb->funcs->enable_disp_power_gating(
 						dcb, controller_id + 1, cntl);
@@ -780,7 +777,8 @@ void dce110_edp_wait_for_hpd_ready(
 	dal_gpio_destroy_irq(&hpd);
 
 	/* ensure that the panel is detected */
-	ASSERT(edp_hpd_high);
+	if (!edp_hpd_high)
+		DC_LOG_DC("%s: wait timed out!\n", __func__);
 }
 
 void dce110_edp_power_control(
@@ -1153,6 +1151,8 @@ void dce110_disable_stream(struct pipe_ctx *pipe_ctx)
 	struct timing_generator *tg = pipe_ctx->stream_res.tg;
 	struct dtbclk_dto_params dto_params = {0};
 	int dp_hpo_inst;
+	struct link_encoder *link_enc = link_enc_cfg_get_link_enc(pipe_ctx->stream->link);
+	struct stream_encoder *stream_enc = pipe_ctx->stream_res.stream_enc;
 
 	if (dc_is_hdmi_tmds_signal(pipe_ctx->stream->signal)) {
 		pipe_ctx->stream_res.stream_enc->funcs->stop_hdmi_info_packets(
@@ -1179,7 +1179,9 @@ void dce110_disable_stream(struct pipe_ctx *pipe_ctx)
 		dccg->funcs->set_dtbclk_dto(dccg, &dto_params);
 		dccg->funcs->disable_symclk32_se(dccg, dp_hpo_inst);
 		dccg->funcs->set_dpstreamclk(dccg, REFCLK, tg->inst, dp_hpo_inst);
-	}
+	} else if (pipe_ctx->stream->signal == SIGNAL_TYPE_DISPLAY_PORT_MST && dccg->funcs->disable_symclk_se)
+		dccg->funcs->disable_symclk_se(dccg, stream_enc->stream_enc_inst,
+				link_enc->transmitter - TRANSMITTER_UNIPHY_A);
 
 	if (dc->link_srv->dp_is_128b_132b_signal(pipe_ctx)) {
 		/* TODO: This looks like a bug to me as we are disabling HPO IO when
@@ -1219,7 +1221,8 @@ void dce110_blank_stream(struct pipe_ctx *pipe_ctx)
 	struct dce_hwseq *hws = link->dc->hwseq;
 
 	if (link->local_sink && link->local_sink->sink_signal == SIGNAL_TYPE_EDP) {
-		hws->funcs.edp_backlight_control(link, false);
+		if (!stream->skip_edp_power_down)
+			hws->funcs.edp_backlight_control(link, false);
 		link->dc->hwss.set_abm_immediate_disable(pipe_ctx);
 	}
 
@@ -1587,6 +1590,7 @@ static enum dc_status apply_single_controller_ctx_to_hw(
 	 */
 	if (pipe_ctx->stream->mall_stream_config.type != SUBVP_PHANTOM) {
 		pipe_ctx->stream->link->psr_settings.psr_feature_enabled = false;
+		pipe_ctx->stream->link->replay_settings.replay_feature_enabled = false;
 	}
 	return DC_OK;
 }
@@ -1794,10 +1798,13 @@ void dce110_enable_accelerated_mode(struct dc *dc, struct dc_state *context)
 			hws->funcs.edp_backlight_control(edp_link_with_sink, false);
 		}
 		/*resume from S3, no vbios posting, no need to power down again*/
+		clk_mgr_exit_optimized_pwr_state(dc, dc->clk_mgr);
+
 		power_down_all_hw_blocks(dc);
 		disable_vga_and_power_gate_all_controllers(dc);
 		if (edp_link_with_sink && !keep_edp_vdd_on)
 			dc->hwss.edp_power_control(edp_link_with_sink, false);
+		clk_mgr_optimize_pwr_state(dc, dc->clk_mgr);
 	}
 	bios_set_scratch_acc_mode_change(dc->ctx->dc_bios, 1);
 }
@@ -2013,6 +2020,10 @@ static bool should_enable_fbc(struct dc *dc,
 
 	/* PSR should not be enabled */
 	if (pipe_ctx->stream->link->psr_settings.psr_feature_enabled)
+		return false;
+
+	/* Replay should not be enabled */
+	if (pipe_ctx->stream->link->replay_settings.replay_feature_enabled)
 		return false;
 
 	/* Nothing to compress */
@@ -2291,6 +2302,11 @@ enum dc_status dce110_apply_ctx_to_hw(
 
 		if (DC_OK != status)
 			return status;
+
+#ifdef CONFIG_DRM_AMD_DC_FP
+		if (hws->funcs.resync_fifo_dccg_dio)
+			hws->funcs.resync_fifo_dccg_dio(hws, dc, context);
+#endif
 	}
 
 	if (dc->fbc_compressor)

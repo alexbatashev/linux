@@ -7,7 +7,6 @@ Linux Hardware Monitoring
 
    hwmon-kernel-api
    pmbus-core
-   inspur-ipsps1
    submitting-patches
    sysfs-interface
    userspace-tools
@@ -74,6 +73,8 @@ Hardware Monitoring Kernel Drivers
    gsc-hwmon
    gl518sm
    hih6130
+   hp-wmi-sensors
+   hs3001
    ibmaem
    ibm-cffps
    ibmpowernv
@@ -81,6 +82,7 @@ Hardware Monitoring Kernel Drivers
    ina2xx
    ina238
    ina3221
+   inspur-ipsps1
    intel-m10-bmc-hwmon
    ir35221
    ir38064
@@ -136,6 +138,7 @@ Hardware Monitoring Kernel Drivers
    max31760
    max31785
    max31790
+   max31827
    max34440
    max6620
    max6639
@@ -188,7 +191,6 @@ Hardware Monitoring Kernel Drivers
    shtc1
    sis5595
    sl28cpld
-   smm665
    smpro-hwmon
    smsc47b397
    smsc47m192
