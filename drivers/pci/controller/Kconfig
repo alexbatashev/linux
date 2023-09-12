@@ -353,7 +353,11 @@ config PCI_LOONGSON
 	  Loongson systems.
 
 config PCIE_MICROCHIP_HOST
+<<<<<<< HEAD
 	bool "Microchip AXI PCIe host bridge support"
+=======
+	tristate "Microchip AXI PCIe controller"
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 	depends on PCI_MSI && OF
 	select PCI_HOST_COMMON
 	help

@@ -4,7 +4,11 @@
 $id: http://devicetree.org/schemas/phy/starfive,jh7110-usb-phy.yaml#
 $schema: http://devicetree.org/meta-schemas/core.yaml#
 
+<<<<<<< HEAD
 title: StarFive USB 2.0 PHY
+=======
+title: StarFive JH7110 USB 2.0 PHY
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 
 maintainers:
   - Minda Chen <minda.chen@starfivetech.com>
@@ -21,13 +25,22 @@ properties:
 
   clocks:
     items:
+<<<<<<< HEAD
       - description: usb 125m clock
       - description: app 125m clock
+=======
+      - description: PHY 125m
+      - description: app 125m
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 
   clock-names:
     items:
       - const: 125m
+<<<<<<< HEAD
       - const: app_125
+=======
+      - const: app_125m
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 
 required:
   - compatible
@@ -41,10 +54,19 @@ additionalProperties: false
 examples:
   - |
     phy@10200000 {
+<<<<<<< HEAD
       compatible = "starfive,jh7110-usb-phy";
       reg = <0x10200000 0x10000>;
       clocks = <&syscrg 95>,
                <&stgcrg 6>;
       clock-names = "125m", "app_125";
       #phy-cells = <0>;
+=======
+        compatible = "starfive,jh7110-usb-phy";
+        reg = <0x10200000 0x10000>;
+        clocks = <&syscrg 95>,
+                 <&stgcrg 6>;
+        clock-names = "125m", "app_125m";
+        #phy-cells = <0>;
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
     };

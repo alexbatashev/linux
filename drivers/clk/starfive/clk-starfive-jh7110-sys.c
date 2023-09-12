@@ -7,6 +7,7 @@
  */
 
 #include <linux/auxiliary_bus.h>
+#include <linux/clk.h>
 #include <linux/clk-provider.h>
 #include <linux/init.h>
 #include <linux/io.h>
@@ -380,6 +381,7 @@ static int __init jh7110_syscrg_probe(struct platform_device *pdev)
 	struct jh71x0_clk_priv *priv;
 	unsigned int idx;
 	int ret;
+	struct clk *pllclk;
 
 	priv = devm_kzalloc(&pdev->dev,
 			    struct_size(priv, reg, JH7110_SYSCLK_END),
@@ -393,6 +395,7 @@ static int __init jh7110_syscrg_probe(struct platform_device *pdev)
 	if (IS_ERR(priv->base))
 		return PTR_ERR(priv->base);
 
+<<<<<<< HEAD
 	dev_set_drvdata(priv->dev, (void *)(&priv->base));
 
 	/*
@@ -405,18 +408,44 @@ static int __init jh7110_syscrg_probe(struct platform_device *pdev)
 							 "osc", 0, 125, 3);
 	if (IS_ERR(priv->pll[0]))
 		return PTR_ERR(priv->pll[0]);
+=======
+	/* Use fixed factor clocks if can not get the PLL clocks from DTS */
+	pllclk = clk_get(priv->dev, "pll0_out");
+	if (IS_ERR(pllclk)) {
+		/* 24MHz -> 1000.0MHz */
+		priv->pll[0] = devm_clk_hw_register_fixed_factor(priv->dev, "pll0_out",
+								 "osc", 0, 125, 3);
+		if (IS_ERR(priv->pll[0]))
+			return PTR_ERR(priv->pll[0]);
+	} else {
+		clk_put(pllclk);
+		priv->pll[0] = NULL;
+	}
+>>>>>>> a747acc0b752f6c3911be539a2d3ca42b4424844
 
-	/* 24MHz -> 1066.0MHz */
-	priv->pll[1] = devm_clk_hw_register_fixed_factor(priv->dev, "pll1_out",
-							 "osc", 0, 533, 12);
-	if (IS_ERR(priv->pll[1]))
-		return PTR_ERR(priv->pll[1]);
+	pllclk = clk_get(priv->dev, "pll1_out");
+	if (IS_ERR(pllclk)) {
+		/* 24MHz -> 1066.0MHz */
+		priv->pll[1] = devm_clk_hw_register_fixed_factor(priv->dev, "pll1_out",
+								 "osc", 0, 533, 12);
+		if (IS_ERR(priv->pll[1]))
+			return PTR_ERR(priv->pll[1]);
+	} else {
+		clk_put(pllclk);
+		priv->pll[1] = NULL;
+	}
 
-	/* 24MHz -> 1188.0MHz */
-	priv->pll[2] = devm_clk_hw_register_fixed_factor(priv->dev, "pll2_out",
-							 "osc", 0, 99, 2);
-	if (IS_ERR(priv->pll[2]))
-		return PTR_ERR(priv->pll[2]);
+	pllclk = clk_get(priv->dev, "pll2_out");
+	if (IS_ERR(pllclk)) {
+		/* 24MHz -> 1188.0MHz */
+		priv->pll[2] = devm_clk_hw_register_fixed_factor(priv->dev, "pll2_out",
+								 "osc", 0, 99, 2);
+		if (IS_ERR(priv->pll[2]))
+			return PTR_ERR(priv->pll[2]);
+	} else {
+		clk_put(pllclk);
+		priv->pll[2] = NULL;
+	}
 
 	for (idx = 0; idx < JH7110_SYSCLK_END; idx++) {
 		u32 max = jh7110_sysclk_data[idx].max;
@@ -455,6 +484,12 @@ static int __init jh7110_syscrg_probe(struct platform_device *pdev)
 				parents[i].fw_name = "tdm_ext";
 			else if (pidx == JH7110_SYSCLK_MCLK_EXT)
 				parents[i].fw_name = "mclk_ext";
+			else if (pidx == JH7110_SYSCLK_PLL0_OUT && !priv->pll[0])
+				parents[i].fw_name = "pll0_out";
+			else if (pidx == JH7110_SYSCLK_PLL1_OUT && !priv->pll[1])
+				parents[i].fw_name = "pll1_out";
+			else if (pidx == JH7110_SYSCLK_PLL2_OUT && !priv->pll[2])
+				parents[i].fw_name = "pll2_out";
 			else
 				parents[i].hw = priv->pll[pidx - JH7110_SYSCLK_PLL0_OUT];
 		}
